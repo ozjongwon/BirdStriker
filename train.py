@@ -8,12 +8,21 @@ from models import EnsembleModel
 import time
 import logging
 import gc
+import os
+from datetime import datetime
+
+MODELS_DIR="models"
 
 def maybe_clear_cuda_cache():
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
 def train_model(args):
+    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    model_dir = os.path.join(MODELS_DIR, current_time)
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+
     # Setup logging
     logging.basicConfig(filename='training.log', level=logging.INFO,
                       format='%(asctime)s - %(message)s')
@@ -21,7 +30,7 @@ def train_model(args):
     # Set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    print(f"*** {device.type}, {torch.get_num_threads()}, {torch.get_num_interop_threads()}")
+    print(f"*** {current_time}, {device.type}, {torch.get_num_threads()}, {torch.get_num_interop_threads()}")
     maybe_clear_cuda_cache()
 
     # Get data loaders
@@ -126,7 +135,8 @@ def train_model(args):
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'best_acc': best_acc,
-            }, 'best_model.pth')
+            },  os.path.join(model_dir, 'best_model.pth')
+)
 
         scheduler.step(val_acc)
 
