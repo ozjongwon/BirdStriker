@@ -9,8 +9,6 @@ import time
 import logging
 import gc
 
-torch.set_num_threads(2)  # or 2, based on your performance testing
-
 def maybe_clear_cuda_cache():
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -22,6 +20,8 @@ def train_model(args):
 
     # Set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    print(f"*** {device.type}, {torch.get_num_threads()}, {torch.get_num_interop_threads()}")
     maybe_clear_cuda_cache()
 
     # Get data loaders
