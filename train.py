@@ -9,6 +9,12 @@ import time
 import logging
 import gc
 
+torch.set_num_threads(2)  # or 2, based on your performance testing
+
+def maybe_clear_cuda_cache():
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
 def train_model(args):
     # Setup logging
     logging.basicConfig(filename='training.log', level=logging.INFO,
@@ -16,7 +22,7 @@ def train_model(args):
 
     # Set device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    torch.cuda.empty_cache()  # Clear GPU cache
+    maybe_clear_cuda_cache()
 
     # Get data loaders
     train_loader, val_loader = get_data_loaders(args.data_dir, args.batch_size)
@@ -42,6 +48,7 @@ def train_model(args):
 
         for batch_idx, (inputs, labels) in enumerate(train_loader):
             try:
+
                 inputs, labels = inputs.to(device), labels.to(device)
 
                 optimizer.zero_grad()
@@ -63,7 +70,7 @@ def train_model(args):
 
                 # Free up memory
                 del outputs, loss
-                torch.cuda.empty_cache()
+                maybe_clear_cuda_cache()
 
                 # Print progress
                 if (batch_idx + 1) % 10 == 0:
@@ -75,8 +82,7 @@ def train_model(args):
             except RuntimeError as e:
                 if "out of memory" in str(e):
                     logging.error(f"OOM error in batch {batch_idx}. Clearing cache and skipping batch...")
-                    if torch.cuda.is_available():
-                        torch.cuda.empty_cache()
+                    maybe_clear_cuda_cache()
                     continue
                 else:
                     raise e
@@ -100,7 +106,7 @@ def train_model(args):
 
                 # Free up memory
                 del outputs
-                torch.cuda.empty_cache()
+                maybe_clear_cuda_cache()
 
         val_acc = 100. * correct / total
 
@@ -126,7 +132,8 @@ def train_model(args):
 
         # Force garbage collection
         gc.collect()
-        torch.cuda.empty_cache()
+        maybe_clear_cuda_cache()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
