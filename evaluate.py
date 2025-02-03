@@ -20,7 +20,8 @@ def evaluate_model(args):
 
     # Load model
     model = EnsembleModel(num_models=args.num_models, num_classes=200).to(device)
-    model.load_state_dict(torch.load(args.model_path))
+    checkpoint = torch.load(args.model_path, map_location=device)
+    model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
 
     all_preds = []
