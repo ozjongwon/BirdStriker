@@ -1,3 +1,5 @@
+# python3 train.py --data_dir CUB_200_2011 --batch_size 32 --epochs 25 --num_models 3
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -120,10 +122,10 @@ def train_model(args):
         val_acc = 100. * correct / total
 
         # Log results
-        logging.info(f'Epoch {epoch+1}/{args.epochs}:')
+        logging.info(f'Epoch {epoch+1}/{args.epochs}, {datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}:')
         logging.info(f'Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%')
         logging.info(f'Val Acc: {val_acc:.2f}%')
-        print(f'Epoch {epoch+1}/{args.epochs}:')
+        print(f'Epoch {epoch+1}/{args.epochs}, {datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}:')
         print(f'Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%')
         print(f'Val Acc: {val_acc:.2f}%')
 

@@ -86,8 +86,8 @@ def get_data_loaders(root_dir, batch_size=32):
     test_dataset = CUBDataset(root_dir, split='test', transform=test_transform)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size,
-                            shuffle=True, num_workers=4)
+                              shuffle=True, num_workers=4, pin_memory=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size,
-                           shuffle=False, num_workers=4)
+                             shuffle=False, num_workers=4, pin_memory=True)
 
     return train_loader, test_loader

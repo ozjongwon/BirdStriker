@@ -1,3 +1,5 @@
+# python3 evaluate.py --data_dir CUB_200_2011 --model_path best_model.pth --num_models 3
+
 import torch
 import argparse
 from dataset import get_data_loaders
