@@ -20,8 +20,10 @@ class EfficientNetBird(nn.Module):
 
     def forward(self, x):
         # Apply gradient checkpointing to the features
-        features = checkpoint.checkpoint(self.efficient_net.features, x, use_reentrant=False)
+        #features = checkpoint.checkpoint(self.efficient_net.features, x, use_reentrant=False)
         # Process through classifier normally
+        features = self.efficient_net.features(x)
+
         x = self.efficient_net.avgpool(features)
         x = torch.flatten(x, 1)
         x = self.efficient_net.classifier(x)
@@ -41,3 +43,38 @@ class EnsembleModel(nn.Module):
 
         # Average the predictions
         return torch.mean(torch.stack(outputs), dim=0)
+
+# 1. First define your model architecture exactly as before
+model = EnsembleModel(num_models=3, num_classes=200)
+
+# 2. Load the weights from your existing .pth file
+checkpoint = torch.load('best_model.pth', map_location='cpu')
+model.load_state_dict(checkpoint['model_state_dict'])
+model.eval()
+
+# 3. Convert to TorchScript and save complete model
+# dummy_input = torch.randn(32, 3, 384, 384)  # Assuming input is an image of size 384x384
+# traced_model = torch.jit.trace(model, dummy_input)
+# traced_model.save('model_complete.pt')
+
+# Disable gradients for tracing
+with torch.no_grad():
+    # Create example input that matches your real input
+    dummy_input = torch.randn(32, 3, 384, 384)  # Note: batch size 1 might work better
+
+    # Try to trace the model
+    try:
+        traced_model = torch.jit.trace(model, dummy_input)
+
+        # Test the traced model with another input
+        #test_input = torch.randn(1, 3, 384, 384)
+        test_output = traced_model(dummy_input)
+
+        # traced_model(test_input)  # This should# work
+
+        # If we get here, tracing succeeded
+        traced_model.save('model_complete.pt')
+        print("Model traced and saved successfully!")
+
+    except Exception as e:
+        print(f"Tracing failed: {str(e)}")

@@ -132,13 +132,7 @@ def train_model(args):
         # Save best model
         if val_acc > best_acc:
             best_acc = val_acc
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'best_acc': best_acc,
-            },  os.path.join(model_dir, 'best_model.pth')
-)
+            torch.save(model,  os.path.join(model_dir, 'best_model.pth'))
 
         scheduler.step(val_acc)
 
